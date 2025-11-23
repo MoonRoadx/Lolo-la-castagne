@@ -1,4 +1,3 @@
-# Lolo la Castagne em JavaScript - P5.js
 🌰 LOLO LA CASTAGNE 🌰
 
 L'HISTOIRE
