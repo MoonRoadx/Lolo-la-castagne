@@ -42,27 +42,27 @@ let level1,
 
 
 function preload() {
-    // sprites
-    spritedata = loadJSON('src/img/alex.json');
-    spritesheet = loadImage('src/img/alex.png');
-    spritedataP = loadJSON('src/img/fundo.json');
-    spritesheetP = loadImage('src/img/fundo-01.png');
-    menuImg = loadImage('src/img/menu.jpg');
-    fontGame = loadFont('src/fonts/PixelGame.ttf');
-    mapa1 = loadJSON('src/json/level-1.json');
+    // sprites - CHEMINS CORRIGÉS
+    spritedata = loadJSON('game/src/img/alex.json');
+    spritesheet = loadImage('game/src/img/alex.png');
+    spritedataP = loadJSON('game/src/img/fundo.json');
+    spritesheetP = loadImage('game/src/img/fundo-01.png');
+    menuImg = loadImage('game/src/img/menu.jpg');
+    fontGame = loadFont('game/src/fonts/PixelGame.ttf');
+    mapa1 = loadJSON('game/src/json/level-1.json');
 
-    // sounds
+    // sounds - CHEMINS CORRIGÉS
     soundFormats('mp3', 'wav');
-    level1 = loadSound('src/sounds/level1.mp3');
-    level2 = loadSound('src/sounds/level2.mp3');
-    punchSound = loadSound('src/sounds/punch.wav');
-    coinSound = loadSound('src/sounds/coins.wav');
-    jumpingSound = loadSound('src/sounds/jumping1.wav');
-    diedSound = createAudio('src/sounds/died.wav');
-    crashSound = loadSound('src/sounds/crash.wav');
-    crashglassSound = loadSound('src/sounds/crashglass.wav');
-    enemyDiedSound = loadSound('src/sounds/crow.wav');
-    superforcaSound = loadSound('src/sounds/superforca.wav');
+    level1 = loadSound('game/src/sounds/level1.mp3');
+    level2 = loadSound('game/src/sounds/level2.mp3');
+    punchSound = loadSound('game/src/sounds/punch.wav');
+    coinSound = loadSound('game/src/sounds/coins.wav');
+    jumpingSound = loadSound('game/src/sounds/jumping1.wav');
+    diedSound = createAudio('game/src/sounds/died.wav');
+    crashSound = loadSound('game/src/sounds/crash.wav');
+    crashglassSound = loadSound('game/src/sounds/crashglass.wav');
+    enemyDiedSound = loadSound('game/src/sounds/crow.wav');
+    superforcaSound = loadSound('game/src/sounds/superforca.wav');
 }
 
 function setup() {
@@ -289,4 +289,3 @@ document.addEventListener('visibilitychange', () => {
     //if(state == 'hidden') menu = 2 & level1.pause()
     //if(state == 'visible') menu = 2
 })
-
