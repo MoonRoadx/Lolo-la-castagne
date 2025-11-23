@@ -56,8 +56,8 @@ let keyConfig = {
     up: 'ArrowUp',
     down: 'ArrowDown',
     jump: ' ',        // Espace
-    punch: 'a',
-    map: 'c'
+    punch: 'e',       // E pour le poing
+    map: 'm'          // M pour la carte
 };
 
 // Sauvegarde par défaut
