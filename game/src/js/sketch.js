@@ -46,6 +46,22 @@ let gameStarted = false;
 let menuStartAnimation = 0;
 let menuSelection = 0;
 let lastKeyPressTime = 0;
+let isRemapping = false;
+let remappingAction = '';
+
+// CONFIGURATION DES TOUCHES (modifiable)
+let keyConfig = {
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    jump: ' ',        // Espace
+    punch: 'a',
+    map: 'c'
+};
+
+// Sauvegarde par défaut
+let defaultKeyConfig = {...keyConfig};
 
 function preload() {
     // sprites - CHEMINS CORRIGÉS
@@ -102,6 +118,9 @@ function setup() {
 
     resolucao();
     document.getElementById('container').style.display = 'none';
+    
+    // Charger la config sauvegardée
+    loadKeyConfig();
 }
 
 // inicia o som 
@@ -122,6 +141,35 @@ function chamaSom(valorSom,level) {
 }
 
 // ========================================
+// GESTION DE LA CONFIG DES TOUCHES
+// ========================================
+
+function getKeyName(key) {
+    if (key === ' ') return 'SPACE';
+    if (key === 'ArrowLeft') return '←';
+    if (key === 'ArrowRight') return '→';
+    if (key === 'ArrowUp') return '↑';
+    if (key === 'ArrowDown') return '↓';
+    return key.toUpperCase();
+}
+
+function saveKeyConfig() {
+    localStorage.setItem('loloKeyConfig', JSON.stringify(keyConfig));
+}
+
+function loadKeyConfig() {
+    const saved = localStorage.getItem('loloKeyConfig');
+    if (saved) {
+        keyConfig = JSON.parse(saved);
+    }
+}
+
+function resetKeyConfig() {
+    keyConfig = {...defaultKeyConfig};
+    saveKeyConfig();
+}
+
+// ========================================
 // MENU START
 // ========================================
 
@@ -134,7 +182,7 @@ function drawStartMenu() {
     textFont(fontGame);
     textAlign(CENTER);
     
-    // Titre principal avec effet
+    // Titre principal
     fill(255, 215, 0);
     textSize(36);
     text("LOLO", width/2, 50);
@@ -158,42 +206,78 @@ function drawStartMenu() {
     // Options du menu
     textSize(12);
     
-    // Option 1: Start Game
+    // Option 0: Start Game
     if (menuSelection == 0) {
         fill(255, 255, 0);
-        text("> START GAME <", width/2, 130);
+        text("> START GAME <", width/2, 125);
     } else {
         fill(200);
-        text("START GAME", width/2, 130);
+        text("START GAME", width/2, 125);
     }
     
-    // Option 2: Controls
+    // Option 1: Controls
     if (menuSelection == 1) {
         fill(255, 255, 0);
-        text("> CONTROLS <", width/2, 148);
+        text("> CONTROLS <", width/2, 140);
     } else {
         fill(200);
-        text("CONTROLS", width/2, 148);
+        text("CONTROLS", width/2, 140);
     }
     
-    // Afficher les contrôles si sélectionné
+    // Option 2: Key Mapping
+    if (menuSelection == 2) {
+        fill(255, 255, 0);
+        text("> KEY MAPPING <", width/2, 155);
+    } else {
+        fill(200);
+        text("KEY MAPPING", width/2, 155);
+    }
+    
+    // Affichage selon la sélection
+    textSize(8);
+    textAlign(LEFT);
+    
     if (menuSelection == 1) {
+        // CONTROLS
         fill(255, 215, 0);
-        textSize(8);
-        textAlign(LEFT);
-        
-        text("KEYBOARD:", 30, 170);
+        text("KEYBOARD:", 30, 175);
         fill(255);
-        text("Arrows : Move", 30, 180);
-        text("SPACE  : Jump", 30, 188);
-        text("A      : Punch", 30, 196);
-        text("C      : Map", 30, 204);
+        text("Move, Jump, Punch, Map", 30, 185);
         
         fill(255, 215, 0);
-        text("TOUCH:", 145, 170);
+        text("TOUCH:", 30, 198);
         fill(255);
-        text("Left  : Move", 145, 180);
-        text("Right : Actions", 145, 188);
+        text("Left pad : Move", 30, 208);
+        text("Right buttons : Actions", 30, 216);
+        
+    } else if (menuSelection == 2) {
+        // KEY MAPPING
+        if (isRemapping) {
+            fill(255, 255, 0);
+            textAlign(CENTER);
+            text("PRESS A KEY FOR:", width/2, 175);
+            text(remappingAction.toUpperCase(), width/2, 185);
+            text("(ESC to cancel)", width/2, 200);
+        } else {
+            fill(255, 215, 0);
+            text("CURRENT MAPPING:", 20, 175);
+            fill(255);
+            textSize(7);
+            text("Left  : " + getKeyName(keyConfig.left), 20, 184);
+            text("Right : " + getKeyName(keyConfig.right), 20, 192);
+            text("Up    : " + getKeyName(keyConfig.up), 20, 200);
+            text("Down  : " + getKeyName(keyConfig.down), 20, 208);
+            
+            text("Jump  : " + getKeyName(keyConfig.jump), 130, 184);
+            text("Punch : " + getKeyName(keyConfig.punch), 130, 192);
+            text("Map   : " + getKeyName(keyConfig.map), 130, 200);
+            
+            fill(255, 215, 0);
+            textSize(7);
+            textAlign(CENTER);
+            text("Press ENTER to remap", width/2, 218);
+            text("Press R to reset", width/2, 226);
+        }
     }
     
     // Crédits en bas
@@ -209,33 +293,50 @@ function drawStartMenu() {
 function handleStartMenuInput() {
     const currentTime = millis();
     
-    // Anti-spam des touches (200ms entre chaque pression)
+    // Si on est en train de remapper
+    if (isRemapping) {
+        return; // On gère ça dans keyPressed
+    }
+    
+    // Anti-spam des touches
     if (currentTime - lastKeyPressTime < 200) {
         return;
     }
     
-    // Navigation avec flèches
-    if (keyIsDown(UP_ARROW) || keyIsDown(87)) { // W aussi
+    // Navigation
+    if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
         if (menuSelection > 0) {
             menuSelection--;
             lastKeyPressTime = currentTime;
         }
     }
-    if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) { // S aussi
-        if (menuSelection < 1) {
+    if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
+        if (menuSelection < 2) {
             menuSelection++;
             lastKeyPressTime = currentTime;
         }
     }
     
-    // Validation avec Espace, Z ou Enter
-    if (keyIsDown(32) || keyIsDown(90) || keyIsDown(13)) { // SPACE, Z ou ENTER
+    // Validation
+    if (keyIsDown(32) || keyIsDown(90)) { // SPACE ou Z
         if (menuSelection == 0) {
             gameStarted = true;
             let valorSom = true;
             chamaSom(valorSom, '1');
             lastKeyPressTime = currentTime;
         }
+    }
+    
+    // ENTER pour entrer dans le remapping
+    if (keyIsDown(13) && menuSelection == 2) { // ENTER
+        startRemapping('left');
+        lastKeyPressTime = currentTime;
+    }
+    
+    // R pour reset
+    if (keyIsDown(82) && menuSelection == 2) { // R
+        resetKeyConfig();
+        lastKeyPressTime = currentTime;
     }
     
     // Touch controls pour mobile
@@ -249,6 +350,41 @@ function handleStartMenuInput() {
 }
 
 // ========================================
+// REMAPPING DES TOUCHES
+// ========================================
+
+const remapSequence = ['left', 'right', 'up', 'down', 'jump', 'punch', 'map'];
+let remapIndex = 0;
+
+function startRemapping(action) {
+    isRemapping = true;
+    remapIndex = 0;
+    remappingAction = remapSequence[remapIndex];
+}
+
+function handleRemapping(key) {
+    if (key === 'Escape') {
+        isRemapping = false;
+        remappingAction = '';
+        return;
+    }
+    
+    // Enregistrer la touche
+    keyConfig[remappingAction] = key;
+    
+    // Passer à la suivante
+    remapIndex++;
+    if (remapIndex < remapSequence.length) {
+        remappingAction = remapSequence[remapIndex];
+    } else {
+        // Terminé
+        isRemapping = false;
+        remappingAction = '';
+        saveKeyConfig();
+    }
+}
+
+// ========================================
 // DRAW PRINCIPAL
 // ========================================
 
@@ -257,7 +393,7 @@ function draw() {
     const ctx = gameCanvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
     
-    // Si le jeu n'a pas commencé, afficher le menu
+    // Menu de démarrage
     if (!gameStarted) {
         drawStartMenu();
         handleStartMenuInput();
@@ -309,64 +445,68 @@ function draw() {
 }
 
 function keyPressed() {
+    // Gestion du remapping
+    if (!gameStarted && isRemapping) {
+        handleRemapping(key);
+        return false;
+    }
+    
     // Pas d'inputs si le jeu n'a pas commencé
     if (!gameStarted) return;
     
-    // teclas não funcionais enquanto há pausa
+    // Utiliser la config personnalisée
     if (menu != 2) {
-        // soco
-        if (key == 'x' || key == 'X') {
+        // Punch
+        if (key == keyConfig.punch || key == keyConfig.punch.toUpperCase()) {
             personagem.soco(cenario);
             if (personagem.superForca == 2) {
                 personagem.vaisuperForca();
             }
             if ((menu == 1) && (flechaMenu <= 690) && (personagem.superForca == 1)) {
                 personagem.superForca = 2;
-                console.log('superforca');
             }
         }
 
-        // pulo normal
-        if (key == 'z' || key == 'Z') {
+        // Jump
+        if (key == keyConfig.jump) {
             personagem.segueRight = 0;
             personagem.segueLeft = 0;
             personagem.pular();
             if ((menu == 1) && (flechaMenu <= 690) && (personagem.superForca == 1)) {
                 personagem.superForca = 2;
-                console.log('superforca');
             }
         }
 
+        // Teleports debug
         if(key == '1'){
             cenario.scrollPer = 1600;
             cenario.scrollHorizontal = 350;
         }
-
         if(key == '2'){
             cenario.scrollPer = 1600;
             cenario.scrollHorizontal = 0;
         }
 
-        // abre o mapa
-        if (key == 'c' || key == 'C') {
+        // Map
+        if (key == keyConfig.map || key == keyConfig.map.toUpperCase()) {
             if (menu == 0) menu = 1;
             else menu = 0;
         }
     }
 
-    // movimentacao
-    if (key == 'ArrowRight') {
+    // Mouvements
+    if (key == keyConfig.right) {
         personagem.passo = 0;
         i = i + 2;
     }
-    if (key == 'ArrowLeft') {
+    if (key == keyConfig.left) {
         personagem.passo = 0;
         i = i - 2;
     }
-    if (key == 'ArrowDown') {
+    if (key == keyConfig.down) {
         b = b + 2;
     }
-    if (key == 'ArrowUp') {
+    if (key == keyConfig.up) {
         b = b - 2;
     }
 }
@@ -374,18 +514,8 @@ function keyPressed() {
 function keyReleased() {
     if (!gameStarted) return;
     
-    // corrida 
-    if (key == 'ArrowRight') {
-        //personagem.passo = 0;
-        //personagem.inercia(personagem.lado);
-    }
-    if (key == 'ArrowLeft') {
-        //personagem.passo = 0;
-        //personagem.inercia(personagem.lado);
-    }
-
-    // super soco
-    if (key == 'z' || key == 'Z') {
+    // Jump release
+    if (key == keyConfig.jump) {
         if (personagem.vy < 0) personagem.vy = 0;
     }
 }
@@ -398,12 +528,10 @@ function resolucao() {
         const width = window.innerWidth;
        
         if (height > width) {
-            console.log(width / rel);
             canvas.style.width = width + "px";
             canvas.style.height = (width / rel) + "px";
             canvas.style.imageRendering = 'pixelated';
         } else {
-            console.log(height * rel);
             canvas.style.width = (height * rel) + "px";
             canvas.style.height = height + "px";
             canvas.style.imageRendering = 'pixelated';
@@ -411,7 +539,6 @@ function resolucao() {
     }
 }
 
-// caso usuario saia da aba o jogo pausa
 document.addEventListener('visibilitychange', () => { 
     //let state = document.visibilityState
     //if(state == 'hidden') menu = 2 & level1.pause()
