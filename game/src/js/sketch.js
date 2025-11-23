@@ -48,6 +48,7 @@ let menuSelection = 0;
 let lastKeyPressTime = 0;
 let isRemapping = false;
 let remappingAction = '';
+let logoStartMenu;
 
 // CONFIGURATION DES TOUCHES (modifiable)
 let keyConfig = {
@@ -72,6 +73,9 @@ function preload() {
     menuImg = loadImage('game/src/img/menu.jpg');
     fontGame = loadFont('game/src/fonts/PixelGame.ttf');
     mapa1 = loadJSON('game/src/json/level-1.json');
+    
+    // Logo pour le menu de démarrage
+    logoStartMenu = loadImage('game/src/img/alex-kidd-logo.png');
 
     // sounds - CHEMINS CORRIGÉS
     soundFormats('mp3', 'wav');
@@ -174,7 +178,19 @@ function resetKeyConfig() {
 // ========================================
 
 function drawStartMenu() {
-    background(backR, backG, backB);
+    // Fond jaune/or comme le logo
+    background(255, 215, 0);
+    
+    // Afficher le logo centré en haut
+    if (logoStartMenu) {
+        push();
+        imageMode(CENTER);
+        // Redimensionner le logo pour qu'il rentre bien
+        let logoWidth = 240;
+        let logoHeight = logoStartMenu.height * (logoWidth / logoStartMenu.width);
+        image(logoStartMenu, width/2, 60, logoWidth, logoHeight);
+        pop();
+    }
     
     menuStartAnimation++;
     
@@ -182,110 +198,108 @@ function drawStartMenu() {
     textFont(fontGame);
     textAlign(CENTER);
     
-    // Titre principal
-    fill(255, 215, 0);
-    textSize(36);
-    text("LOLO", width/2, 50);
-    
-    fill(139, 69, 19);
-    textSize(20);
-    text("LA CASTAGNE", width/2, 75);
-    
     // Sous-titre clignotant
     fill(255);
     textSize(8);
     if (menuStartAnimation % 60 < 30) {
-        text("PRESS SPACE TO START", width/2, 95);
+        text("PRESS SPACE TO START", width/2, 125);
     }
     
     // Ligne de séparation
-    stroke(255, 215, 0);
-    line(40, 105, 216, 105);
+    stroke(139, 69, 19);
+    strokeWeight(2);
+    line(40, 135, 216, 135);
     noStroke();
     
     // Options du menu
-    textSize(12);
+    textSize(11);
     
     // Option 0: Start Game
     if (menuSelection == 0) {
-        fill(255, 255, 0);
-        text("> START GAME <", width/2, 125);
+        fill(0);
+        text("> START GAME <", width/2, 155);
     } else {
-        fill(200);
-        text("START GAME", width/2, 125);
+        fill(100);
+        text("START GAME", width/2, 155);
     }
     
     // Option 1: Controls
     if (menuSelection == 1) {
-        fill(255, 255, 0);
-        text("> CONTROLS <", width/2, 140);
+        fill(0);
+        text("> CONTROLS <", width/2, 170);
     } else {
-        fill(200);
-        text("CONTROLS", width/2, 140);
+        fill(100);
+        text("CONTROLS", width/2, 170);
     }
     
     // Option 2: Key Mapping
     if (menuSelection == 2) {
-        fill(255, 255, 0);
-        text("> KEY MAPPING <", width/2, 155);
+        fill(0);
+        text("> KEY MAPPING <", width/2, 185);
     } else {
-        fill(200);
-        text("KEY MAPPING", width/2, 155);
+        fill(100);
+        text("KEY MAPPING", width/2, 185);
     }
     
     // Affichage selon la sélection
-    textSize(8);
+    textSize(7);
     textAlign(LEFT);
     
     if (menuSelection == 1) {
-        // CONTROLS
-        fill(255, 215, 0);
-        text("KEYBOARD:", 30, 175);
-        fill(255);
-        text("Move, Jump, Punch, Map", 30, 185);
+        // CONTROLS - Fond semi-transparent
+        fill(0, 0, 0, 150);
+        rect(15, 195, 226, 45);
         
         fill(255, 215, 0);
-        text("TOUCH:", 30, 198);
+        text("KEYBOARD:", 20, 202);
         fill(255);
-        text("Left pad : Move", 30, 208);
-        text("Right buttons : Actions", 30, 216);
+        text("Arrows : Move", 20, 210);
+        text("SPACE  : Jump", 20, 218);
+        text("E      : Punch", 20, 226);
+        text("M      : Map", 20, 234);
+        
+        fill(255, 215, 0);
+        text("TOUCH:", 140, 202);
+        fill(255);
+        text("Left  : Move", 140, 210);
+        text("Right : Actions", 140, 218);
         
     } else if (menuSelection == 2) {
-        // KEY MAPPING
+        // KEY MAPPING - Fond semi-transparent
+        fill(0, 0, 0, 150);
+        rect(15, 195, 226, 50);
+        
         if (isRemapping) {
             fill(255, 255, 0);
             textAlign(CENTER);
-            text("PRESS A KEY FOR:", width/2, 175);
-            text(remappingAction.toUpperCase(), width/2, 185);
-            text("(ESC to cancel)", width/2, 200);
+            text("PRESS A KEY FOR:", width/2, 205);
+            text(remappingAction.toUpperCase(), width/2, 215);
+            text("(ESC to cancel)", width/2, 230);
         } else {
             fill(255, 215, 0);
-            text("CURRENT MAPPING:", 20, 175);
+            text("CURRENT MAPPING:", 20, 202);
             fill(255);
             textSize(7);
-            text("Left  : " + getKeyName(keyConfig.left), 20, 184);
-            text("Right : " + getKeyName(keyConfig.right), 20, 192);
-            text("Up    : " + getKeyName(keyConfig.up), 20, 200);
-            text("Down  : " + getKeyName(keyConfig.down), 20, 208);
+            text("Left  : " + getKeyName(keyConfig.left), 20, 210);
+            text("Right : " + getKeyName(keyConfig.right), 20, 218);
+            text("Up    : " + getKeyName(keyConfig.up), 20, 226);
+            text("Down  : " + getKeyName(keyConfig.down), 20, 234);
             
-            text("Jump  : " + getKeyName(keyConfig.jump), 130, 184);
-            text("Punch : " + getKeyName(keyConfig.punch), 130, 192);
-            text("Map   : " + getKeyName(keyConfig.map), 130, 200);
+            text("Jump  : " + getKeyName(keyConfig.jump), 130, 210);
+            text("Punch : " + getKeyName(keyConfig.punch), 130, 218);
+            text("Map   : " + getKeyName(keyConfig.map), 130, 226);
             
-            fill(255, 215, 0);
-            textSize(7);
+            fill(255, 255, 0);
             textAlign(CENTER);
-            text("Press ENTER to remap", width/2, 218);
-            text("Press R to reset", width/2, 226);
+            text("ENTER: remap | R: reset", width/2, 242);
         }
     }
     
     // Crédits en bas
-    textSize(7);
+    textSize(6);
     textAlign(CENTER);
-    fill(150);
-    text("BASED ON ALEX KIDD", width/2, height - 15);
-    text("CRYPTO ADVENTURE", width/2, height - 7);
+    fill(139, 69, 19);
+    text("BASED ON ALEX KIDD - CRYPTO ADVENTURE", width/2, height - 5);
     
     pop();
 }
